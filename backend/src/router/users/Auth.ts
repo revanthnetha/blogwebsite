@@ -1,45 +1,105 @@
-// import { Hono } from "hono";
-// import { signup,signin } from "../../controllers/Auth";
-// import { z } from "zod";
+import { Hono } from "hono";
+import { Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client/extension";
+import { withAccelerate } from "@prisma/extension-accelerate";
+import { z } from "zod";
+import { verify, sign } from "hono/jwt";
 
-// const signUpSchema = z.object({
-//   username: z.string(),
-//   password: z.string(),
-//   firstName: z.string(),
-//   lastName: z.string(),
-// });
+const saltRounds = 10;
 
-// const signInSchema = z.object({
-//   username: z.string(),
-//   password: z.string(),
-// });
+const signUpSchema = z.object({
+  name: z.string().optional(),
+  password: z.string(),
+  email: z.string().email(),
+});
 
-// const app = new Hono();
+const signinSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+});
 
-// app.post("/signup", async (c) => {
-//   const { success } = signUpSchema.safeParse(c.req);
-//   if (!success) {
-//     return c.json({ error: "Invalid inputs" });
-//   }
-//   const { username, password, firstName, lastName } = c.req.body;
-//   const result = await signup(username, password, firstName, lastName);
-//   if (result) {
-//     return c.json({ message: "User created successfully" });
-//   }
-//   return c.json({ error: "Failed to create user" });
-// });
+export const userRouter = new Hono<{
+  Bindings: {
+    DATABASE_URL: string;
+    SECRET_KEY: string;
+  };
+}>();
 
-// app.post("/signin", async (c) => {
-//   const { success } = signInSchema.safeParse(c.req);
-//   if (!success) {
-//     return c.json({ error: "Invalid inputs" });
-//   }
-//   const { username, password } = c.req.body;
-//   const result = await signin(username, password);
-//   if (result) {
-//     return c.json({ message: "User logged in successfully" });
-//   }
-//   return c.json({ error: "Failed to login user" });
-// });
+userRouter.post("signup", async (c) => {
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env?.DATABASE_URL,
+  }).$extends(withAccelerate());
+  const body = await c.req.json();
+  const { success } = signUpSchema.safeParse(body);
+  if (!success) {
+    c.status(403);
+    return c.json({ error: "Invalid request" });
+  }
+  try {
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email: body.email,
+      },
+    });
+    if (existingUser) {
+      c.status(400);
+      return c.json({ error: "User already exists" });
+    }
 
-// export default app;
+    const user = await prisma.user.create({
+      data: {
+        name: body.name,
+        password: body.password,
+        email: body.email,
+      },
+    });
+    const token = await sign(
+      {
+        id: user.id,
+        email: user.email,
+      },
+      c.env.SECRET_KEY
+    );
+
+    c.status(200);
+    return c.json({ token });
+  } catch (e) {
+    c.status(403);
+    return c.json({ error: e });
+  }
+});
+
+userRouter.post("/signin", async (c) => {
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate());
+  const body = await c.req.json();
+  const { success } = signinSchema.safeParse(body);
+  if (!success) {
+    c.status(403);
+    return c.json({ error: "Invalid request" });
+  }
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        email: body.email,
+      },
+    });
+    if (!user) {
+      c.status(400);
+      return c.json({ error: "User not exists" });
+    }
+    const token = await sign(
+      {
+        id: user.id,
+        email: user.email,
+      },
+      c.env.SECRET_KEY
+    );
+    c.status(200);
+    return c.json({ token });
+  } catch (e) {
+    c.status(403);
+    return c.json({ error: e });
+  }
+});

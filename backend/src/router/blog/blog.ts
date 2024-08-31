@@ -1,19 +1,15 @@
-// import { Hono } from "hono";
+import { Hono } from "hono";
 
-// const app = new Hono();
+export const BlogRouter = new Hono<{
+    Bindings : {
+        DATABASE_URL : string,
+        SECRET_KEY : string
+    }
+}>
 
-// app.get("/:id",async (c)=>{
-//     const id = c.req.param("id");
-//     return c.text("")
-// })
 
-// app.post("/", async (c)=>{
-//    return c.text("blog post")
-// })
+BlogRouter.post("/api/v1/blog", async (c) => {});
 
-// app.put("/",async (c)=>{
-//  return c.text("blog put")
-// })
+BlogRouter.put("/api/v1/blog", async (c) => {});
 
-// export default app;
-
+BlogRouter.get("/api/v1/blog/:id", async (c) => {});
