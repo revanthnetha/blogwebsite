@@ -1,11 +1,10 @@
 import { Hono } from "hono";
-import { Prisma } from "@prisma/client";
-import { PrismaClient } from "@prisma/client/extension";
+import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { z } from "zod";
 import { verify, sign } from "hono/jwt";
+import { hashPassword, verifyPassword } from "./hashing";
 
-const saltRounds = 10;
 
 const signUpSchema = z.object({
   name: z.string().optional(),
@@ -25,7 +24,7 @@ export const userRouter = new Hono<{
   };
 }>();
 
-userRouter.post("signup", async (c) => {
+userRouter.post("/signup", async (c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env?.DATABASE_URL,
   }).$extends(withAccelerate());
@@ -46,17 +45,17 @@ userRouter.post("signup", async (c) => {
       return c.json({ error: "User already exists" });
     }
 
+    const hashedPassword = await hashPassword(body.password);
     const user = await prisma.user.create({
       data: {
         name: body.name,
-        password: body.password,
+        password: hashedPassword,
         email: body.email,
       },
     });
     const token = await sign(
       {
         id: user.id,
-        email: user.email,
       },
       c.env.SECRET_KEY
     );
@@ -68,6 +67,7 @@ userRouter.post("signup", async (c) => {
     return c.json({ error: e });
   }
 });
+
 
 userRouter.post("/signin", async (c) => {
   const prisma = new PrismaClient({
@@ -89,10 +89,14 @@ userRouter.post("/signin", async (c) => {
       c.status(400);
       return c.json({ error: "User not exists" });
     }
+    const verifiedPassword = await verifyPassword(body.password,user.password);
+    if(!verifiedPassword){
+      c.status(400);
+      return c.json({error:"User Password not match"});
+    }
     const token = await sign(
       {
         id: user.id,
-        email: user.email,
       },
       c.env.SECRET_KEY
     );
