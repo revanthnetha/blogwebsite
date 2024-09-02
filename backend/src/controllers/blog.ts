@@ -1,70 +1,10 @@
-import { verify } from "hono/jwt";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
-import { Hono } from "hono";
-import { boolean, z } from "zod";
+import { blogAddSchema, blogUpdateSchema } from "bandirevanthblog";
+import { Context } from "hono";
 
-export const BlogRouter = new Hono<{
-  Bindings: {
-    DATABASE_URL: string;
-    SECRET_KEY: string;
-  };
-  Variables: {
-    userId: string;
-  };
-}>();
-
-const blogAddSchema = z.object({
-  title: z.string(),
-  content: z.string(),
-  published: z.boolean().optional(),
-});
-
-const blogUpdateSchema = z.object({
-  id: z.string(),
-  title: z.string().optional(),
-  content: z.string().optional(),
-  published: z.boolean().optional(),
-});
-
-BlogRouter.get("/bulk", async (c) => {
-  const prisma = new PrismaClient({
-    datasourceUrl: c.env?.DATABASE_URL,
-  }).$extends(withAccelerate());
-
-  try {
-    const posts = await prisma.post.findMany({
-      orderBy: { title: "desc" },
-    });
-
-    if (!posts || posts.length === 0) {
-      console.log("No posts found");
-      return c.json({ error: "No posts found" }, 404);
-    }
-
-    return c.json({ posts: posts }, 200);
-  } catch (e) {
-    console.error("Error fetching posts:", e);
-    return c.json({ error: e }, 400);
-  }
-});
-
-BlogRouter.use("/*", async (c, next) => {
-  const header = c.req.header("Authorization");
-  if (!header) {
-    return c.json("Send the token", 401);
-  }
-  const token = header.split(" ")[1];
-  const decoded = await verify(token, c.env.SECRET_KEY);
-  if (!decoded) {
-    return c.json("Invalid token", 401);
-  }
-  //@ts-ignore
-  c.set("userId", decoded.id);
-  await next();
-});
-
-BlogRouter.post("/add", async (c) => {
+// Create the blog
+export const createBlog = async (c: Context) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env?.DATABASE_URL,
   }).$extends(withAccelerate());
@@ -87,9 +27,10 @@ BlogRouter.post("/add", async (c) => {
   } catch (e) {
     return c.json({ error: e }, 400);
   }
-});
+};
 
-BlogRouter.put("/update", async (c) => {
+//   update the blog
+export const blogUpdate = async (c: Context) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env?.DATABASE_URL,
   }).$extends(withAccelerate());
@@ -115,9 +56,10 @@ BlogRouter.put("/update", async (c) => {
   } catch (e) {
     return c.json({ error: e }, 400);
   }
-});
+};
 
-BlogRouter.get("/:id", async (c) => {
+//   get the Blog by Id
+export const getBlogbyId = async (c: Context) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env?.DATABASE_URL,
   }).$extends(withAccelerate());
@@ -137,4 +79,27 @@ BlogRouter.get("/:id", async (c) => {
   } catch (e) {
     return c.json({ error: e }, 400);
   }
-});
+};
+
+//   get all blogs : Add pagination
+export const getAllBlogs = async (c: Context) => {
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env?.DATABASE_URL,
+  }).$extends(withAccelerate());
+
+  try {
+    const posts = await prisma.post.findMany({
+      orderBy: { title: "desc" },
+    });
+
+    if (!posts || posts.length === 0) {
+      console.log("No posts found");
+      return c.json({ error: "No posts found" }, 404);
+    }
+
+    return c.json({ posts: posts }, 200);
+  } catch (e) {
+    console.error("Error fetching posts:", e);
+    return c.json({ error: e }, 400);
+  }
+};

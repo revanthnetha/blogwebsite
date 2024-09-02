@@ -2,8 +2,8 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
-import { userRouter } from "./router/users/Auth";
-import { BlogRouter } from "./router/blog/blog";
+import { userRouter } from "./router/users/authRouter";
+import { BlogRouter } from "./router/blog/blogRouter";
 
 const app = new Hono<{
   Bindings: {
