@@ -27,6 +27,28 @@ const blogUpdateSchema = z.object({
   published: z.boolean().optional(),
 });
 
+BlogRouter.get("/bulk", async (c) => {
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env?.DATABASE_URL,
+  }).$extends(withAccelerate());
+
+  try {
+    const posts = await prisma.post.findMany({
+      orderBy: { title: "desc" },
+    });
+
+    if (!posts || posts.length === 0) {
+      console.log("No posts found");
+      return c.json({ error: "No posts found" }, 404);
+    }
+
+    return c.json({ posts: posts }, 200);
+  } catch (e) {
+    console.error("Error fetching posts:", e);
+    return c.json({ error: e }, 400);
+  }
+});
+
 BlogRouter.use("/*", async (c, next) => {
   const header = c.req.header("Authorization");
   if (!header) {
@@ -116,27 +138,3 @@ BlogRouter.get("/:id", async (c) => {
     return c.json({ error: e }, 400);
   }
 });
-
-BlogRouter.get("/bulk", async (c) => {
-    const prisma = new PrismaClient({
-      datasourceUrl: c.env?.DATABASE_URL,
-    }).$extends(withAccelerate());
-  
-    try {
-      const posts = await prisma.post.findMany({
-        orderBy: { title: 'desc' },
-      });
-  
-      if (!posts || posts.length === 0) {
-        console.log("No posts found");
-        return c.json({ error: "No posts found" }, 404);
-      }
-  
-      console.log(posts);
-      return c.json({ postsOne: posts }, 200);
-    } catch (e) {
-      console.error("Error fetching posts:", e);
-      return c.json({ error: e }, 400);
-    }
-  });
-  
