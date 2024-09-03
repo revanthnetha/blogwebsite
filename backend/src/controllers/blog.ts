@@ -71,9 +71,18 @@ export const getBlogbyId = async (c: Context) => {
         id,
         authorId: userId,
       },
-      include: {
-        author: true,
-      },
+     select:{
+      title:true,
+      content:true,
+      published:true,
+      id:true,
+      author:{
+        select:{
+          name:true,
+          email:true
+        }
+      }
+     }
     });
     return c.json({ post: post }, 200);
   } catch (e) {
@@ -90,6 +99,18 @@ export const getAllBlogs = async (c: Context) => {
   try {
     const posts = await prisma.post.findMany({
       orderBy: { title: "desc" },
+      select:{
+        id: true,
+        title:true,
+        content:true,
+        published:true,
+        author:{
+          select:{
+            name:true,
+            email:true
+          }
+        }
+      }
     });
 
     if (!posts || posts.length === 0) {

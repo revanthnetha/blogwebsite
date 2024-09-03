@@ -9,7 +9,7 @@ const Appbar = () => {
         <Link to={"/blog"}>Medium</Link>
       </div>
       <div>
-        <Avatar type="nav" authorName="Revanth" />
+        <Avatar type="nav" authorName="Revanth" email="bandirevanth143@gmail.com"/>
       </div>
     </div>
   );
