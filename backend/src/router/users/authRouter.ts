@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { signIn, signUp } from "../../controllers/Auth";
+import { signIn, signUp } from "../../controllers/auth";
 
 export const userRouter = new Hono<{
   Bindings: {
