@@ -6,12 +6,14 @@
         "bandirevanthblog",
         "Blogby",
         "datasource",
+        "dompurify",
         "extralight",
         "hono",
         "Inputlabel",
         "Isopen",
         "Revanth",
         "signin",
-        "Signup"
+        "Signup",
+        "Texteditor"
     ]
 }

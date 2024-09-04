@@ -1,3 +1,25 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom styles for Quill theme */
+.ql-toolbar {
+    @apply bg-gray-100 border-t-2 border-gray-400 rounded-t-lg;
+  }
+  
+  .ql-container {
+    @apply border-2 border-gray-300 rounded-b-lg;
+  }
+  
+  .ql-editor {
+    @apply p-4;
+    min-height: 300px; /* Increase content area height */
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .ql-container {
+      min-height: 200px; /* Adjust for smaller screens */
+    }
+  }
+  

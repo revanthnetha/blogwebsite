@@ -18,7 +18,7 @@ const SigninCard = () => {
       const res = await axios.post(`${BACKEND_URL}/user/signin`, SignInputs);
       const token = res.data.token;
       localStorage.setItem("token", token);
-      navigate('/blog');
+      navigate('/blogs');
     } catch (e) {
       console.log(e);
     }

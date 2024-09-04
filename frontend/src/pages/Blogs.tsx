@@ -2,11 +2,19 @@ import React from "react";
 import Layout from "../Layout";
 import { useBlogs } from "../hooks";
 import BlogCard from "../components/blog/BlogCard";
+import Skeleton from "../components/Skeleton";
 
 const Blogs = () => {
   const { loading, Blogs } = useBlogs();
   if (loading) {
-    return <>loading...</>;
+    return <>
+    <Skeleton/>
+    <Skeleton/>
+    <Skeleton/>
+    <Skeleton/>
+    <Skeleton/>
+    <Skeleton/>
+    </>;
   }
   return (
     <div>

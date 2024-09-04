@@ -1,7 +1,7 @@
 import React from 'react'
 import Appbar from './components/Appbar'
 
-const Layout = ({children}) => {
+const Layout = ({children}:{children : React.ReactNode}) => {
   return (
     <div>
      <Appbar/>

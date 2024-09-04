@@ -1,6 +1,7 @@
 import React from "react";
 import Avatar from "../Avatar";
 import { Link } from "react-router-dom";
+import SanitizedContent from "../publish/SanitizedContent";
 
 interface blogCardInputs {
   id: string;
@@ -25,7 +26,11 @@ const BlogCard = ({ id, authorName, date, title, content }: blogCardInputs) => {
         </div>
         <div className="text-xl font-semibold pt-2">{title}</div>
         <div className="text-md font-thin">
-          {content.length > 100 ? content.slice(0, 100) + "..." : content}
+          {content.length > 100 ? (
+            <SanitizedContent content={content.slice(0, 100) + "..."} />
+          ) : (
+            <SanitizedContent content={content} />
+          )}
         </div>
         <div className="text-slate-500 text-sm font-thin pt-4">
           {content.length / 100} minute(s){" "}

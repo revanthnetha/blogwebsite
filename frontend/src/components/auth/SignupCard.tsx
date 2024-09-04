@@ -19,7 +19,7 @@ const SignupCard = () => {
       const res = await axios.post(`${BACKEND_URL}/user/signup`, SignInputs);
       const token = res.data.token;
       localStorage.setItem("token", token);
-      navigate('/blog');
+      navigate('/blogs');
     } catch (e) {
       console.log(e);
     }
@@ -33,7 +33,7 @@ const SignupCard = () => {
         </h1>
         <div className="text-lg text-slate-400 font-bold flex space-x-2 justify-center align-center items-center">
           <h4>Already have an Account?</h4>
-          <Link to={"/signin"} className="text-slate-400 text-sm underline">
+          <Link to={"/"} className="text-slate-400 text-sm underline">
             Login
           </Link>
         </div>

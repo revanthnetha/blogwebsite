@@ -1,6 +1,7 @@
 import React from "react";
 import { blog } from "../../hooks";
 import Avatar from "../Avatar";
+import SanitizedContent from "../publish/SanitizedContent";
 
 const FullBlog = ({ blog }: { blog: blog }) => {
   return (
@@ -10,7 +11,7 @@ const FullBlog = ({ blog }: { blog: blog }) => {
           <div className="col-span-8">
             <div className="text-5xl font-extrabold">{blog.title}</div>
             <div className="text-slate-500 pt-2">Post on 2nd December 2023</div>
-            <div className="pt-4">{blog.content}</div>
+            <div className="pt-4"> <SanitizedContent content={blog.content} /></div>
           </div>
           <div className="col-span-4">
             <div className="text-slate-600 text-lg">Author</div>
